@@ -36,7 +36,7 @@
     "python3",
     "-B",
     "-m",
-    "samples.demo"
+    "samples.history_demo"
   ]
 }
 ```

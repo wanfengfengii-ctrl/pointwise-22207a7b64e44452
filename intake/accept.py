@@ -6,11 +6,13 @@ import sqlite3
 from contextlib import closing
 from pathlib import Path
 
+from balance.history import check_history_consistency
 from balance.posting import post_artifact
 from balance.store import open_report_database
 from intake.envelope import decode_envelope
 from intake.receipts import Receipt, insert_receipt, lookup_receipt, same_artifact
 from intake.validate import validate_artifact
+from issue.artifact import FrozenHistory
 from source.store import write_transaction
 
 
@@ -24,6 +26,8 @@ def accept(db: sqlite3.Connection, payload: bytes) -> Receipt:
             if not same_artifact(previous, artifact):
                 raise ValueError('receipt artifact identity conflict')
             return previous
+        if isinstance(artifact, FrozenHistory):
+            check_history_consistency(db, artifact)
         receipt = insert_receipt(db, artifact)
         post_artifact(db, artifact)
     return receipt

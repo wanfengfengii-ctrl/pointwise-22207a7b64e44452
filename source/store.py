@@ -141,6 +141,21 @@ class SourceStore:
         for record in records:
             yield SourceRevision.from_record(record)
 
+    def revisions_between(
+        self, day: StationDay, start: int, end: int, lower: int, upper: int
+    ) -> Iterator[SourceRevision]:
+        """Yield original revisions ordered by commit number within (start, end] and [lower, upper)."""
+        records = self._db.execute(
+            '''SELECT cut, request_id, key, kind, litres, origin FROM source_revisions
+               WHERE station = ? AND day = ? AND cut > ? AND cut <= ?
+               ORDER BY cut''',
+            (*day.identity, start, end),
+        )
+        for record in records:
+            revision = SourceRevision.from_record(record)
+            if lower <= revision.key < upper:
+                yield revision
+
     def revision_at(self, day: StationDay, cut: int) -> SourceRevision | None:
         if not 0 < cut <= _MAX_SQLITE_INTEGER:
             return None

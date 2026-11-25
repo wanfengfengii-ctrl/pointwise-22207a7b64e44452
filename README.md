@@ -39,6 +39,17 @@ python3 -B -m reports.reconcile report.sqlite HP 2026-11-25 10 20
 
 点件子命令为 `point SOURCE STATION DAY ARTIFACT_ID CUT KEY`。源侧 `apply` 的 `withdrawal` 种类省略末尾的升数参数。业务拒绝由 CLI 返回非零状态。
 
+历史件在现有的发行登记与报表库上另开 V2 通道，与逐日结算互不影响：
+
+```sh
+python3 -B -m issue.requests issue.sqlite history source.sqlite HP 2026-11-25 H1 10 20 5 9 > H1.json
+python3 -B -m issue.requests issue.sqlite reissue H1
+python3 -B -m intake.accept report.sqlite H1.json
+python3 -B -m reports.reconcile report.sqlite HP 2026-11-25 10 20 --history 5 9
+```
+
+历史件 CLI 的六个位置参数依次为源库、站、日、件号、键区间的两端、源提交窗口的两端。`reports.reconcile` 带上 `--history START END` 时领取历史复核，否则仍是原日报。
+
 ## Python 接口
 
 | 操作 | 入口和结果 |
@@ -48,6 +59,7 @@ python3 -B -m reports.reconcile report.sqlite HP 2026-11-25 10 20
 | 发行和复发 | `issue.requests.issue(store, registry, artifact_id, day, cut, bounds=(lower, upper))` 发行盘点。用 `key=key` 发行点件。`issue.reissue.reissue(registry, artifact_id)` 返回原字节串，未知件号返回 `None`。 |
 | 异地实收 | `intake.accept.accept(connection, payload)` 返回 `Receipt(number, artifact_id, payload)`。调用使用 `balance.store.open_report_database(path)` 打开并初始化独立报表库，在连接没有活动事务时办理。`intake.receipts.lookup_receipt(connection, artifact_id)` 可按件号查实收。 |
 | 日报与查源 | `reports.daybook.daybook(path, day, lower, upper)` 领取 `Daybook`。`reports.provenance.trace(path, day, key)` 领取当前在册键的 `Provenance`，缺席时返回 `None`。`reports.reconcile.reconcile_range(path, day, lower, upper)` 一次领取日报与全部逐行出处。 |
+| 历史复核 | `issue.history.issue_history(source, registry, id, day, bounds, start, end)` 发行冻结的 V2 历史件并返回字节串。`reports.reconcile.review_history(path, day, bounds, start, end)` 从报表库读视图领取 `{'initial': [...], 'revisions': [...]}`，材料未齐时为 `'PENDING'`。源侧 `source.history.source_window`、`source_changes` 可分别取起点在册与窗内修订。 |
 
 用 `source.store.open_source(path)` 打开源仓，`issue.registry.open_issue_registry(path)` 打开发行登记。源仓、登记和报表写连接由调用者关闭，可用 `contextlib.closing` 管理。日报与查源自行打开已有报表库的读视图。`reconcile_range` 可用 `after_daybook` 回调在日账选定后安排交班操作，逐行出处仍在原读视图内查询。
 
@@ -58,3 +70,4 @@ python3 -B -m reports.reconcile report.sqlite HP 2026-11-25 10 20
 - 传送件使用 UTF-8 JSON。V1 外层字段是 `version`、`kind`、`artifact_id`、`station`、`day`、`cut`、`bounds`、`rows`。行字段为 `key`、`litres`、`origin`。`stocktake` 的 `bounds` 是完整的两端点，`rows` 按键递增且可以为空。`point` 的 `bounds` 是 `null`，仅有一个行项，其 `litres` 为 `null` 时表示撤销。空正文盘点仍证明请求范围内缺席。完整内容相同的来件可重投，JSON 空白和对象字段顺序不影响身份。
 - 报表库只根据收到的材料解释日账。每个键以涵盖它的最高源提交号为准，整段盘点未列出的键和点撤销均给出缺席。在册盘点行的有效提交号是盘点截点，出处来自冻结行。等价的同截点实收证据按件号排序选取出处。件号对应原实收登记。分开调用的查询各自读取当时视图。
 - 非法输入、未知源截点和身份冲突触发 `ValueError`。SQLite 写入或提交失败随数据库错误返回，原可见账和实收保持。撤去故障后可重投，成功后复领同一笔实收。报告仓的读取与供数库和发行登记相互独立。
+- V2 历史件在键区间上记录起点截点的全部在册行（含真实原修订号与出处），并在源提交窗口上记录全部原修订。报表库只在查询的每个键与提交号组合都被实收件的声明覆盖时交付；重叠或接边件在共同截点的在册事实和共同修订窗口上必须相容，矛盾件拒收且已收件与已派结果不变。同值勘误按实际提交号保留，重复证据只列一次。历史件不入逐日结算。

@@ -3,7 +3,7 @@ from __future__ import annotations
 import sqlite3
 from dataclasses import dataclass, field
 
-from issue.artifact import FrozenArtifact, encode_artifact
+from issue.artifact import FrozenArtifact, FrozenHistory, encode_packet
 
 
 @dataclass(frozen=True)
@@ -30,12 +30,12 @@ def lookup_receipt(db: sqlite3.Connection, artifact_id: str) -> Receipt | None:
     return None if record is None else Receipt(*record)
 
 
-def same_artifact(receipt: Receipt, artifact: FrozenArtifact) -> bool:
-    return receipt.payload == encode_artifact(artifact)
+def same_artifact(receipt: Receipt, artifact: FrozenArtifact | FrozenHistory) -> bool:
+    return receipt.payload == encode_packet(artifact)
 
 
-def insert_receipt(db: sqlite3.Connection, artifact: FrozenArtifact) -> Receipt:
-    payload = encode_artifact(artifact)
+def insert_receipt(db: sqlite3.Connection, artifact: FrozenArtifact | FrozenHistory) -> Receipt:
+    payload = encode_packet(artifact)
     cursor = db.execute(
         'INSERT INTO receipts (artifact_id, payload) VALUES (?, ?)', (artifact.artifact_id, payload)
     )

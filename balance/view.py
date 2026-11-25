@@ -14,6 +14,10 @@ from source.day import StationDay, require_integer
 class ReadView:
     _db: sqlite3.Connection
 
+    @property
+    def database(self) -> sqlite3.Connection:
+        return self._db
+
     def rows(self, day: StationDay, lower: int, upper: int) -> tuple[VisibleRow, ...]:
         return read_visible_rows(self._db, day, lower, upper)
 

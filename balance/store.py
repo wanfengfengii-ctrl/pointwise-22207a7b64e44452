@@ -47,6 +47,34 @@ CREATE TABLE IF NOT EXISTS visible_rows (
     artifact_id TEXT NOT NULL REFERENCES receipts (artifact_id),
     PRIMARY KEY (station, day, key)
 );
+CREATE TABLE IF NOT EXISTS history_evidence (
+    artifact_id TEXT PRIMARY KEY REFERENCES receipts (artifact_id),
+    station TEXT NOT NULL,
+    day TEXT NOT NULL,
+    lower_key TEXT COLLATE ledger_integer NOT NULL,
+    upper_key TEXT COLLATE ledger_integer NOT NULL,
+    start_cut TEXT COLLATE ledger_integer NOT NULL,
+    end_cut TEXT COLLATE ledger_integer NOT NULL
+);
+CREATE INDEX IF NOT EXISTS history_day_window
+    ON history_evidence (station, day, start_cut, end_cut);
+CREATE TABLE IF NOT EXISTS history_initial (
+    artifact_id TEXT NOT NULL REFERENCES history_evidence (artifact_id),
+    key TEXT COLLATE ledger_integer NOT NULL,
+    litres TEXT NOT NULL,
+    cut TEXT COLLATE ledger_integer NOT NULL,
+    origin TEXT NOT NULL,
+    PRIMARY KEY (artifact_id, key)
+);
+CREATE TABLE IF NOT EXISTS history_changes (
+    artifact_id TEXT NOT NULL REFERENCES history_evidence (artifact_id),
+    cut TEXT COLLATE ledger_integer NOT NULL,
+    key TEXT COLLATE ledger_integer NOT NULL,
+    kind TEXT NOT NULL,
+    litres TEXT,
+    origin TEXT NOT NULL,
+    PRIMARY KEY (artifact_id, cut)
+);
 '''
 
 

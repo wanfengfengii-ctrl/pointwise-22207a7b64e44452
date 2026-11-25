@@ -8,6 +8,7 @@ from contextlib import closing
 
 from issue.artifact import encode_artifact
 from issue.changes import freeze_point_change
+from issue.history import issue_history
 from issue.registry import IssueRegistry, open_issue_registry
 from issue.reissue import reissue
 from issue.stocktake import freeze_stocktake
@@ -65,6 +66,15 @@ def main(argv: list[str] | None = None) -> int:
     stocktake.add_argument('lower', type=int)
     stocktake.add_argument('upper', type=int)
     point.add_argument('key', type=int)
+    history = commands.add_parser('history')
+    history.add_argument('source')
+    history.add_argument('station')
+    history.add_argument('day')
+    history.add_argument('artifact_id')
+    history.add_argument('lower', type=int)
+    history.add_argument('upper', type=int)
+    history.add_argument('start', type=int)
+    history.add_argument('end', type=int)
     resend = commands.add_parser('reissue')
     resend.add_argument('artifact_id')
     args = parser.parse_args(argv)
@@ -77,11 +87,17 @@ def main(argv: list[str] | None = None) -> int:
                     raise ValueError('unknown artifact id')
             else:
                 day = StationDay(args.station, args.day)
-                selection = {'key': args.key} if args.command == 'point' else {
-                    'bounds': (args.lower, args.upper)
-                }
                 with closing(open_source(args.source)) as source:
-                    payload = issue(source, registry, args.artifact_id, day, args.cut, **selection)
+                    if args.command == 'history':
+                        payload = issue_history(
+                            source, registry, args.artifact_id, day,
+                            (args.lower, args.upper), args.start, args.end,
+                        )
+                    else:
+                        selection = {'key': args.key} if args.command == 'point' else {
+                            'bounds': (args.lower, args.upper)
+                        }
+                        payload = issue(source, registry, args.artifact_id, day, args.cut, **selection)
         sys.stdout.buffer.write(payload + b'\n')
     except (ValueError, OSError, sqlite3.Error) as error:
         parser.exit(1, f'{error}\n')
