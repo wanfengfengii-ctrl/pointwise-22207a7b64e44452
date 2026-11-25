@@ -1,0 +1,17 @@
+{
+  "station": "HP",
+  "day": "2026-11-25",
+  "events": [
+    {"request": "r1", "kind": "reading", "key": -2, "litres": 2, "origin": "orig-2"},
+    {"request": "r2", "kind": "reading", "key": 2, "litres": 3, "origin": "orig2"},
+    {"request": "r3", "kind": "reading", "key": 5, "litres": 0, "origin": "orig5"},
+    {"request": "r4", "kind": "reading", "key": 20, "litres": 19, "origin": "orig20"},
+    {"request": "r5", "kind": "reading", "key": 25, "litres": 4, "origin": "orig25"},
+    {"request": "r6", "kind": "reading", "key": 12, "litres": 11, "origin": "orig12"},
+    {"request": "r7", "kind": "reading", "key": 15, "litres": 7, "origin": "orig15"},
+    {"request": "r8", "kind": "withdrawal", "key": 15, "litres": null, "origin": "orig15"},
+    {"request": "r9", "kind": "correction", "key": 12, "litres": 13, "origin": "orig12"},
+    {"request": "r10", "kind": "reading", "key": 18, "litres": 5, "origin": "orig18"},
+    {"request": "r11", "kind": "correction", "key": 15, "litres": 17, "origin": "orig15"}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "requests": [
+    {"artifact_id": "P4", "cut": 4, "key": 20},
+    {"artifact_id": "P7", "cut": 7, "key": 15},
+    {"artifact_id": "S8", "cut": 8, "bounds": [10, 20]},
+    {"artifact_id": "P9", "cut": 9, "key": 12},
+    {"artifact_id": "S10", "cut": 10, "bounds": [14, 18]},
+    {"artifact_id": "Z10", "cut": 10, "key": 18},
+    {"artifact_id": "P11", "cut": 11, "key": 15}
+  ],
+  "batches": [["P9", "S8"], ["P7"], ["P4", "Z10", "S10", "P7"], ["P11"]]
+}

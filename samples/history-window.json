@@ -1,0 +1,26 @@
+{
+  "station": "HP",
+  "day": "2026-11-25",
+  "events": [
+    ["reading", 2, 4, "outside-1"],
+    ["reading", 3, 5, "outside-2"],
+    ["reading", 4, 6, "outside-3"],
+    ["reading", 5, 8, "outside-4"],
+    ["reading", 12, 7, "field-12"],
+    ["reading", 6, 10, "outside-6"],
+    ["reading", 7, 11, "outside-7"],
+    ["correction", 12, 7, "field-12"],
+    ["reading", 20, 13, "outside-9"],
+    ["withdrawal", 12, null, "withdraw-12"],
+    ["correction", 12, 0, "restore-12"]
+  ],
+  "tiles": [
+    ["A", [10, 15], 5, 7],
+    ["B", [15, 20], 7, 9],
+    ["C", [15, 20], 5, 7],
+    ["D", [10, 15], 7, 9],
+    ["E", [10, 15], 6, 9],
+    ["F", [10, 15], 9, 11]
+  ],
+  "outside_at_8": ["reading", 8, 12, "outside-8"]
+}
